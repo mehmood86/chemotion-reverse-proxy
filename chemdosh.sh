@@ -7,7 +7,7 @@ NC='\033[0m' # No Color
 
 BASE_ELN="base_eln/"
 REVERSE_PROXY="chemotion_reverse_proxy/"
-IP="192.168.0.255" # change '255' accoringly with your broadcast iP address
+IP="192.168.0.85" # change '255' accoringly with your broadcast iP address
 
 Logo(){
   echo "-------------------------------"
@@ -25,6 +25,7 @@ help() {
   echo " -  create_elns:"
   echo " -  start_elns:"
   echo " -  stop_elns:"
+  echo " -  destroy_elns:"
   echo " -  add_ip_map:"
   echo " -  remove_ip_map:"
   echo "-----------------------------------------------------------"
@@ -96,7 +97,7 @@ start_elns() {
   echo "Hint: $0 start_elns 2"; exit 1
   fi
 
-  prinft "${BLUE}Starting NGINX Reverse Proxy server${NC}"
+  printf "${BLUE}Starting NGINX Reverse Proxy server${NC}"
   docker-compose -f chemotion_reverse_proxy/docker-compose.yml up -d
 
   for number in $(seq 1 $1); do
@@ -104,8 +105,8 @@ start_elns() {
       # map IP in /etc/hosts
       echo "Mapping IP for instance$number.chem.de"
       sudo sh -c "echo $IP instance$number.chem.de >> /etc/hosts"
-      
-      printf "${BLUE}eln$number exists, starting contianer...${NC}\n"
+
+      printf "${BLUE}eln$number exists, starting container...${NC}\n"
       docker-compose -f eln$number/docker-compose.yml up -d
     else
       printf "${RED}Error: eln$number not found, no services for eln$number started.${NC}\n"
@@ -126,7 +127,7 @@ stop_elns() {
 
   for number in $(seq 1 $1); do
     if [ -d "eln$number" ]; then
-      # Remove IP map in /etc/hosts 
+      # Remove IP map in /etc/hosts
       echo "Removing IP for instance$number.chem.de"
       sudo sed -i "/$IP instance$number.chem.de/d" /etc/hosts
 
@@ -137,6 +138,28 @@ stop_elns() {
       exit 1
     fi
   done
+}
+
+destroy_elns() {
+  re='^[0-9]+$'
+  if ! [[ $1 =~ $re ]]; then
+  printf "${RED}Error: not a valid number${NC}\n" >&2;
+  echo "Hint: $0 destroy_elns 2"; exit 1
+  fi
+
+  printf "${RED}WARNING${NC} this will destroy all elns\n"
+
+  for number in $(seq 1 $1); do
+    if [ -d "eln$number" ]; then
+      echo "Destroying folder eln$number"
+      # Delete folder recursively
+      sudo rm -R "eln$number"
+    else
+      printf "${RED}Error: eln$number not found, Aborting...${NC}\n"
+      exit 1
+    fi
+  done
+  echo "finished"
 }
 
 add_ip_map() {
@@ -161,19 +184,19 @@ remove_ip_map(){
     printf "${RED}Error: Not a valid number ${NC}\n" >&2;
     echo "Hint: $0 remove_ip_map 2";  exit 1
   fi
-  
+
   sudo sed -i "/# Chemotion ELN/d" /etc/hosts
   for id in $(seq 1 $1)
-  do 
+  do
     echo "Removing IP for instance$id.chem.de"
     sudo sed -i "/$IP instance$id.chem.de/d" /etc/hosts
-  done 
+  done
 }
 
 
 # Check if a function exists in the script
 if declare -f "$1" > /dev/null
-then 
+then
   "$@"
 else
   printf "${RED}'$1'${NC} is not a valid function\n" >&2
@@ -183,17 +206,17 @@ fi
 
 FunctionalTesting(){
   printf "${BROWN}Selenium Test Framework ::: starting functional testing...${NC}"
-  echo 
+  echo
 
   while ! curl http://localhost:4000/
-  do 
+  do
     echo "$(date) - still trying"
     sleep 1
   done
   echo "$(date) - connected successfully"
   sleep 1
   echo "Chemotion ELN instance is running"
- 
+
   secs=$((5))
   while [ $secs -gt 0 ]; do
      echo -ne "starting SeleniumTests in: $secs\033[0K\r"
