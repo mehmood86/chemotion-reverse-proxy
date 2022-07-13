@@ -23,8 +23,8 @@ help() {
   echo " -  help:"
   echo " -  generate_base_eln:"
   echo " -  create_elns:"
-  echo " -  start_eln:"
-  echo " -  stop_eln:"
+  echo " -  start_elns:"
+  echo " -  stop_elns:"
   echo " -  add_ip_map:"
   echo " -  remove_ip_map:"
   echo "-----------------------------------------------------------"
@@ -51,8 +51,8 @@ init() {
   cd $REVERSE_PROXY
   sudo curl -L -O https://raw.githubusercontent.com/mehmood86/chemotion-reverse-proxy/main/Dockerfile
   sudo curl -L -O https://raw.githubusercontent.com/mehmood86/chemotion-reverse-proxy/main/docker-compose.yml
-  sudo curl -L -O https://raw.githubusercontent.com/ptrxyz/chemotion/main/reverse-proxy/nginx-passenger.conf
-  sudo curl -L -O https://raw.githubusercontent.com/ptrxyz/chemotion/main/reverse-proxy/nginx.conf
+  sudo curl -L -O https://raw.githubusercontent.com/ptrxyz/chemotion/v1.0.3D0.1/reverse-proxy/nginx-passenger.conf
+  sudo curl -L -O https://raw.githubusercontent.com/ptrxyz/chemotion/v1.0.3D0.1/reverse-proxy/nginx.conf
   sudo mv nginx-passenger.conf config.txt
   cd ..
 }
